@@ -2,9 +2,10 @@ import _ from 'lodash';
 import React from 'react';
 import { NOTE_TO_KEY } from '../global/constants';
 import styled from 'styled-components';
+import { useState } from 'react';
 
 const PianoKey = styled.div`
-  background-color: ${props => props.pressed ? "#00d8ff" : "white"};
+  background-color: ${props => props.isPressed ? "#00d8ff" : "white"};
   height: 300px;
   width: 60px;
   border: 2px solid black;
@@ -12,7 +13,7 @@ const PianoKey = styled.div`
 
 const FlatPianoKey = styled(PianoKey)`
   position: relative;
-  background-color: ${props => props.pressed ? "#00d8ff" : "black"};
+  background-color: ${props => props.isPressed ? "#00d8ff" : "black"};
   margin-left: -17px;
   margin-right: -17px;
   height: 200px;
@@ -29,22 +30,36 @@ const KeyText = styled.div`
   pointer-events: none;
 `;
 
-export const Key = ({note, pressedKeys}) => {
+export const Key = ({note}) => {
+  const [pressedKey, setPressedKey] = useState(false);
+
   const noteIsFlat = (note) => {
     return note.length > 1;
   }
+  
+  const playNote = (note) => {
+    if (!_.isEmpty(note)) {
+      const noteAudio = new Audio(document.getElementById(note).src);
+      noteAudio.play();
+    }
+  }
 
-  const keyIsPressed = (note, pressedKeys) => {
-    return _.includes(pressedKeys, NOTE_TO_KEY[note]);
+  function handleKeyDown() {
+    playNote(note);
+    setPressedKey(true);
+  }
+
+  function handleKeyUp() {
+    setPressedKey(false);
   }
 
   return (
     <>
     {
       noteIsFlat(note) ? 
-      <FlatPianoKey pressed={keyIsPressed(note, pressedKeys)}/>
+      <FlatPianoKey onMouseDown={handleKeyDown} onMouseUp={handleKeyUp} isPressed={pressedKey}/>
       :
-      <PianoKey pressed={keyIsPressed(note, pressedKeys)}>
+      <PianoKey onMouseDown={handleKeyDown} onMouseUp={handleKeyUp} isPressed={pressedKey}>
         <KeyText>
           {note.toUpperCase()}
         </KeyText>
